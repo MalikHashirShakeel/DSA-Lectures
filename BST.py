@@ -1,14 +1,27 @@
 #-----------------------------------------------------------------------------------------------
+# Binary Search Tree Implementation with Full Documentation
+#-----------------------------------------------------------------------------------------------
 
 class TreeNode:
+    """
+    A class representing a single node in a binary search tree (BST).
+    Each node contains a value, a reference to a left child, and a right child.
+    """
+
     def __init__(self, value):
+        """
+        Initialize a TreeNode with a given value.
+        :param value: The value of the node.
+        """
         self.value = value
         self.left = None
         self.right = None
 
-#-----------------------------------------------------------------------------------------------
-
     def add(self, value):
+        """
+        Add a new value to the BST while maintaining BST properties.
+        :param value: The value to add to the tree.
+        """
         if value < self.value:
             if not self.left:
                 self.left = TreeNode(value)
@@ -20,33 +33,34 @@ class TreeNode:
             else:
                 self.right.add(value)
 
-#----------------------------------------------------------------------------------------------
-
     def left_logical_successor(self):
-        if self is None:
-            return None
-        
-        if not self.right:
-            return self
-
-        return self.right.left_logical_successor()
-
-#-----------------------------------------------------------------------------------------------
+        """
+        Find the left-most logical successor in the subtree rooted at this node.
+        :return: The left-most logical successor.
+        """
+        current = self
+        while current.left:
+            current = current.left
+        return current
 
     def right_logical_successor(self):
-        if self is None:
-            return None
-
-        if not self.left:
-            return self
-
-        return self.left.right_logical_successor()
-
-#-----------------------------------------------------------------------------------------------
+        """
+        Find the right-most logical successor in the subtree rooted at this node.
+        :return: The right-most logical successor.
+        """
+        current = self
+        while current.right:
+            current = current.right
+        return current
 
     def parse_tree(self, lst=None):
+        """
+        Traverse the BST in in-order and collect the values in a list.
+        :param lst: The list to store values (used for recursion).
+        :return: The list of values in sorted order.
+        """
         if lst is None:
-            lst = []  
+            lst = []
 
         if self.left:
             self.left.parse_tree(lst)
@@ -57,10 +71,14 @@ class TreeNode:
             self.right.parse_tree(lst)
 
         return lst
-#-----------------------------------------------------------------------------------------------
 
     def search(self, value, parent=None):
-
+        """
+        Search for a node with the specified value in the BST.
+        :param value: The value to search for.
+        :param parent: The parent of the current node (used for deletion).
+        :return: A tuple containing the node and its parent, or (None, None) if not found.
+        """
         if self.value == value:
             return [self, parent]
 
@@ -71,48 +89,67 @@ class TreeNode:
             return self.right.search(value, self)
 
         return [None, None]
-    
-#-----------------------------------------------------------------------------------------------
 
-    def delete(self ,value):
-        nodes = self.search(value)
+    def delete(self, value):
+        """
+        Delete a node with the specified value from the BST.
+        :param value: The value to delete.
+        """
+        node, parent = self.search(value)
 
-        if nodes == [None ,None]:
+        if node is None:
             raise Exception("Node not found in the tree.")
-        
-        elif not nodes[0].left and not nodes[0].right:
-            nodes[1].left = None if nodes[1].left == nodes[0] else nodes[1].right = None
 
-        elif not nodes[0].left or not nodes[0].right:
-
-            if nodes[0].left:
-                nodes[1].left = nodes[0].left if nodes[1].left == nodes[0] else nodes[1].right = nodes[0].left
+        # Case 1: Node has no children (leaf node)
+        if not node.left and not node.right:
+            if parent:
+                if parent.left == node:
+                    parent.left = None
+                else:
+                    parent.right = None
             else:
-                nodes[1].left = nodes[0].right if nodes[1].left == nodes[0] else nodes[1].right = nodes[0].right
+                raise Exception("Cannot delete the root node without children.")
 
+        # Case 2: Node has one child
+        elif not node.left or not node.right:
+            child = node.left if node.left else node.right
+            if parent:
+                if parent.left == node:
+                    parent.left = child
+                else:
+                    parent.right = child
+            else:
+                # Replace root node
+                node.value = child.value
+                node.left = child.left
+                node.right = child.right
+
+        # Case 3: Node has two children
         else:
-            successor = nodes[0].right.right_logical_successor()
-            nodes[0].value = successor.value
-            if successor.right:
-                successor.value = successor.right.value
-                successor.right = successor.right.right
-            else:
-                del(successor)
+            # Find the in-order successor (smallest value in the right subtree)
+            successor = node.right.left_logical_successor()
+            node.value = successor.value
+            # Delete the successor node
+            node.right.delete(successor.value)
 
 #-----------------------------------------------------------------------------------------------
-
-#===============================================================================================
-#FUNCTIONS
+# Helper Functions
+#-----------------------------------------------------------------------------------------------
 
 def build_bst(lst):
+    """
+    Build a binary search tree (BST) from a list of values.
+    :param lst: A list of values to add to the BST.
+    :return: The root node of the constructed BST.
+    """
+    if not lst:
+        raise ValueError("Input list is empty.")
+
     root = TreeNode(lst[0])
 
-    for node_idx in range(len(lst)):
-        root.add(lst[node_idx])
+    for value in lst[1:]:
+        root.add(value)
 
     return root
 
 #-----------------------------------------------------------------------------------------------
-
-
-    
